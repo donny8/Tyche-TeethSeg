@@ -139,8 +139,7 @@ def arch_curve_inference(image_path, infer_kit, config_dict, device='cpu'):
 
     checkpoint_path = config_dict['checkpoint_path']
 
-#    model = TysegXC(encoder_blocks=[16, 32, 64, 64], decoder_blocks=[16, 32, 64, 64]).to(device)
-    model = TysegXC(encoder_blocks=[16, 16, 16, 16], decoder_blocks=[16, 16, 16, 16]).to(device)
+    model = TysegXC(encoder_blocks=[8, 16, 32, 64], decoder_blocks=[8, 16, 32, 64]).to(device)
 
     model_dict = torch.load(checkpoint_path, map_location=torch.device(device))
     model.load_state_dict(model_dict)

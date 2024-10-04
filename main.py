@@ -82,8 +82,7 @@ if __name__ == "__main__":
     loaders = load_dataloaders(case_ids, dataset_dir, batch_size, num_workers,  support, useMAXAug=useMAXAug)
 
     # Load the model
-#    model = TysegXC(encoder_blocks=[16, 32, 64, 64], decoder_blocks=[16, 32, 64, 64]).to(device)
-    model = TysegXC(encoder_blocks=[16, 16, 16, 16], decoder_blocks=[16, 16, 16, 16]).to(device)
+    model = TysegXC(encoder_blocks=[8, 16, 32, 64], decoder_blocks=[8, 16, 32, 64]).to(device)
 
 
     # Set optimizer
@@ -219,7 +218,6 @@ if __name__ == "__main__":
 
     ## ======================================================  Step 3: Model Test  ====================================================== ##
     if(onlyTest):
-        ## Global parameters
         result_dir = './results/{}'.format(exp_name)
         config_dict = {
                     'seed':seed,
