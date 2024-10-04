@@ -1,4 +1,14 @@
-einops==0.7.0
-pydantic==1.10.7
-torch==1.13.1
+torch==2.1.2
 validation==0.8.3
+numpy==1.26.3
+tqdm==4.65.2
+pillow==10.2.0
+scikit-learn==1.5.1
+torchio==0.19.9
+matplotlib
+einops
+pydantic
+monai
+psutil
+tqdm
+tensorboard
