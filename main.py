@@ -15,7 +15,7 @@ parser.add_argument('--test', action='store_true', help='Whether to evaluate a p
 
 parser.add_argument('--support', type=str, default='normal', choices=['normal', 'mix', 'noisy'], help='Which support set to choose')
 parser.add_argument('--K', type=int, default=1, help='The number of stochastic input')
-parser.add_argument('--seed', type=int, default=0)
+parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('--batch', type=int, default=1)
 parser.add_argument('--epochs', type=int, default=300)
 parser.add_argument('--device', type=str, default='cuda')
@@ -99,8 +99,6 @@ if __name__ == "__main__":
     noise_image_fixed = torch.randn(1, K, 1, 512, 512)
     infer_kit = [support_images, support_labels, noise_image_fixed, K]
     np.savez(f'./results/{exp_name}/support.npz', support_images = support_images, support_labels=support_labels, noise_image = noise_image_fixed, K=K)
-    support_images_tr = repeat(support_images, '1 S 1 width height -> batch S 1 width height', batch=batch_size)            
-    support_labels_tr = repeat(support_labels, '1 S 1 width height -> batch S 1 width height', batch=batch_size)            
 
     if(onlyTrain):
         best_val = {
@@ -125,10 +123,12 @@ if __name__ == "__main__":
 
                 data, target = batch_data['image'].unsqueeze(1), batch_data['label'].unsqueeze(1)
                 data = repeat(data, 'batch 1 1 width height -> batch K 1 width height', K=K)
+                support_images_tr = repeat(support_images, '1 S 1 width height -> batch S 1 width height', batch=data.shape[0])            
+                support_labels_tr = repeat(support_labels, '1 S 1 width height -> batch S 1 width height', batch=data.shape[0])            
                 if device=='cuda':
                     data, target = data.to(device), target.to(device)
 
-                noise_image = torch.randn(batch_size, K, 1, 512, 512).to(device)
+                noise_image = torch.randn_like(data).to(device)
                 outputs = model(support_images=support_images_tr, support_labels=support_labels_tr, target_image=data, noise_image=noise_image)
                 loss, loss_dice, loss_bce = loss_handler(outputs, target/target.max(), useLOGDice, useBCELoss, dice_fn_min, bce_fn, device)
                     
@@ -210,6 +210,9 @@ if __name__ == "__main__":
             scheduler.step()
             torch.save(model.state_dict(), os.path.join(checkpoints_path, 'last.pth'))
 
+        with open('./results/summary.txt', 'a+') as log:
+            log.writelines(f"{exp_name}\n Best dice: {best_val['value']:.2f}(ep{best_val['epoch']})  Last dice: {dice_score:.2f}\n")
+            
         save_loss_plot(train_losses, 'Train_Loss', exp_name, './results')
         save_loss_plot(train_dice, 'Train_DICE', exp_name, './results')
         save_loss_plot(train_bce, 'Train_BCE', exp_name, './results')
